@@ -110,6 +110,9 @@ $.fn.shape = function(parameters) {
         animate: function(propertyObject, callback) {
           module.verbose('Animating box with properties', propertyObject);
           callback = callback || function(event) {
+            if (event && (event.originalEvent.propertyName !== 'transform' || !$(event.target).hasClass('sides'))) {
+              return $sides.one(module.get.transitionEvent(), callback);
+            }
             module.verbose('Executing animation callback');
             if(event !== undefined) {
               event.stopPropagation();
@@ -145,7 +148,10 @@ $.fn.shape = function(parameters) {
         queue: function(method) {
           module.debug('Queueing animation of', method);
           $sides
-            .one(module.get.transitionEvent(), function() {
+            .one(module.get.transitionEvent(), function fn(event) {
+              if (event.originalEvent.propertyName !== 'transform' || !$(event.target).hasClass('sides')) {
+                return $sides.one(module.get.transitionEvent(), fn);
+              }
               module.debug('Executing queued animation');
               setTimeout(function(){
                 $module.shape(method);
